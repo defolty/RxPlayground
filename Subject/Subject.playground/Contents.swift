@@ -52,7 +52,7 @@ example(of: "PublishSubject") {
     
     let subscriptionTwo = subject
         .subscribe { event in
-            print("2", event.element ?? event)
+            print("2)", event.element ?? event)
         }
     
     subject.onNext("3")
@@ -114,6 +114,203 @@ example(of: "BehaviorSubjects") {
     // 3 - Создайте новый экземпляр BehaviorSubject. Его инициализатор принимает начальное значение
     let subject = BehaviorSubject(value: "Initial Value")
     let disposeBag = DisposeBag()
+    
+    subject.onNext("X")
+    
+    subject
+        .subscribe {
+            print(label: "1)", event: $0)
+        }
+    
+        .disposed(by: disposeBag)
+    
+    // 1 - Добавляете событие ошибки в тему.
+    subject.onError(MyError.anError)
+    
+    // 2 - Создаете новую подписку на объект.
+    subject
+        .subscribe {
+            print(label: "2)", event: $0)
+        }
+    
+        .disposed(by: disposeBag)
+    /* output
+     --- Example of: BehaviorSubjects ---
+     1) X
+     1) anError
+     2) anError
+     */
 }
 
- 
+    // MARK: - ReplaySubject
+
+example(of: "ReplaySubject") {
+    // 1 - Создайте новый объект воспроизведения с размером буфера 2.
+    // Объекты воспроизведения инициализируются с помощью метода типа create(bufferSize:).
+    let subject = ReplaySubject<String>.create(bufferSize: 2)
+    let disposeBag = DisposeBag()
+    
+    // 2 - Добавьте три элемента к субъекту.
+    subject.onNext("1")
+    subject.onNext("2")
+    subject.onNext("3")
+    
+    // 3 - Создайте две подписки на объект.
+    subject
+        .subscribe {
+            print(label: "1)", event: $0)
+        }
+        .disposed(by: disposeBag)
+    
+    subject
+        .subscribe {
+            print(label: "2)", event: $0)
+        }
+        .disposed(by: disposeBag)
+    
+    // Последние два элемента воспроизводятся обоим подписчикам; 1 никогда не испускается,
+    // потому что 2 и 3 добавляются в субъект воспроизведения с размером буфера 2 до того, как на него подписались.
+    
+    /* output
+     --- Example of: ReplaySubject ---
+     1) 2
+     1) 3
+     2) 2
+     2) 3
+     */
+    
+    // С помощью этого кода вы добавляете еще один элемент в тему, а затем создаете новую подписку на него.
+    // Первые две подписки получат этот элемент как обычно, потому что они уже были подписаны, когда новый элемент был добавлен в тему,
+    // а новый третий подписчик получит последние два буферизованных элемента, воспроизведенные для него.
+    subject.onNext("4")
+    
+    subject.onError(MyError.anError)
+    
+    subject.dispose()
+    // При явном вызове dispose() на субъекте воспроизведения заранее, новые подписчики получат только событие ошибки,
+    // указывающее на то, что субъект уже был утилизирован.
+    // в консоле изменилась последняя запись:
+    // "3) Object `RxSwift.(unknown context at $12e9cb320).ReplayMany<Swift.String>` was already disposed."
+    
+    subject
+        .subscribe {
+            print(label: "3)", event: $0)
+        }
+        .disposed(by: disposeBag)
+    /* output without subject.onError
+     1) 4
+     2) 4
+     3) 3
+     3) 4
+     -
+     output with subject.onError
+     1) 4
+     2) 4
+     1) anError
+     2) anError
+     3) 3
+     3) 4
+     3) anError
+     Что происходит? Субъект воспроизведения завершается с ошибкой, которая будет повторно передана новым подписчикам - вы узнали это ранее.
+     Но буфер также все еще остается, поэтому он также будет повторно передан новым подписчикам, прежде чем событие остановки будет повторно передано.
+     */
+}
+
+    // MARK: - PublishRelay
+
+/// Используя `publishSubject, behaviorSubject или replaySubject`, вы сможете смоделировать практически любую потребность.
+/// Однако могут быть случаи, когда вы просто захотите пойти по старинке и спросить у наблюдаемого типа: "Эй, какое у тебя текущее значение?". `PublishRelay` здесь!
+/// Ранее вы узнали, что `relay` оборачивает `subject`, сохраняя его поведение при воспроизведении.
+/// В отличие от других subjects - и observables в целом - вы добавляете значение в relay с помощью метода `accept(_:)`
+/// Другими словами, вы не используете `onNext(_:)`
+/// Это связано с тем, что `relay` могут только принимать значения, т.е. вы не можете добавить к ним ошибку или завершенное(`completion`) событие.
+/// `PublishRelay` оборачивает `PublishSubject`, а `BehaviorRelay` оборачивает `BehaviorSubject`.
+/// `Кудфн` отличаются от своих обернутых `subject` тем, что они гарантированно никогда не завершатся.
+
+example(of: "PublishRelay") {
+    let publishRelay = PublishRelay<String>()
+    
+    let disposeBag = DisposeBag()
+    
+    publishRelay.accept("Knock knock, anyone home?")
+    
+    // создаём подписчиков
+    publishRelay
+        .subscribe(onNext: {
+            print($0)
+        })
+        .disposed(by: disposeBag)
+    publishRelay.accept("1")
+    /* output
+     --- Example of: PublishReplay ---
+     1
+     Note: Не существует способа добавить ошибку или завершенное событие.
+     */
+}
+
+    // MARK: - BehaviorRelay
+
+// Помните, что publishRelays обертывает publishSubject и работает точно так же, как и они, за исключением части accept и того, что они не завершаются.
+// Как насчет чего-то более интересного? Поприветствуйте моего маленького друга, BehaviorRelay.
+
+// BehaviorRelays также не завершается при completion или error.
+// Поскольку он обернут в behaviorSubject, behaviorRelay создается с начальным значением,
+// и он будет воспроизводить свое последнее или начальное значение новым подписчикам.
+// Особая сила behaviorRelay в том, что вы можете в любой момент запросить у него текущее значение.
+// Эта возможность позволяет соединить императивный и реактивный миры полезным способом.
+example(of: "BehaviorRelay") {
+    
+    // 1 - Вы создаете реле поведения (behaviorRelay) с начальным значением.
+    // Тип relay выводится, но вы также можете явно объявить тип как BehaviorRelay<String>(value: "Initial value").
+    let behaviorRelay = BehaviorRelay(value: "Initial Value")
+    let disposeBag = DisposeBag()
+    
+    // 2 - Добавьте новый элемент к relay.
+    behaviorRelay.accept("New Initial Value")
+    
+    // 3 - Подпишитесь на relay.
+    behaviorRelay
+        .subscribe {
+            print(label: "1)", event: $0)
+        }
+        .disposed(by: disposeBag)
+    /* output
+     --- Example of: BehaviorRelay ---
+     1) New Initial Value
+     Note: Подписчик получает последнее значение
+     */
+    
+    // 1 - Добавляем новый элемент в relay
+    behaviorRelay.accept("1")
+    
+    // 2 - Создаём нового подписчика на relay
+    behaviorRelay
+        .subscribe {
+            print(label: "2)", event: $0)
+        }
+        .disposed(by: disposeBag)
+    
+    // 3 - Добавляем ещё один элемент в relay
+    behaviorRelay.accept("2")
+    
+    /* output
+     --- Example of: BehaviorRelay ---
+     1) New Initial Value
+     1) 1
+     2) 1
+     1) 2
+     2) 2
+     
+     Существующая подписка 1) получает новое значение 1, добавленное в relay.
+     Новая подписка получает это же значение, когда она подписывается, потому что это самое последнее значение.
+     И обе подписки получают значение 2, когда оно добавляется в реле
+     */
+    
+    print(behaviorRelay.value)
+    // output - 2
+    // это последнее добавленное значение в relay
+     
+    // BehaviorRelays универсальны.
+    // Вы можете подписаться на них, чтобы иметь возможность реагировать на каждое новое следующее событие, как и на любой другой subject.
+    // Кроме того, они могут удовлетворять разовые потребности, например, когда вам нужно просто проверить текущее значение без подписки на получение обновлений.
+}
