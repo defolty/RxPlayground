@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:../Filter.playground">
+   </FileRef>
+   <FileRef
+      location = "group:../ObservableChallenge.playground">
+   </FileRef>
+   <FileRef
+      location = "group:../Observable.playground">
+   </FileRef>
+   <FileRef
+      location = "group:../SubjectChallenge.playground">
+   </FileRef>
+   <FileRef
+      location = "group:../Subject.playground">
+   </FileRef>
+   <FileRef
+      location = "group:RxPlayground.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+</Workspace>
