@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../FilterChallenge.playground">
+   </FileRef>
+   <FileRef
       location = "group:../Filter.playground">
    </FileRef>
    <FileRef
