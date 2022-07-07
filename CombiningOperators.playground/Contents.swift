@@ -259,3 +259,32 @@ example(of: "zip") {
     ///# Это называется `индексированным секвенированием(indexed sequencing)`,
     ///# которое представляет собой способ последовательного прохождения последовательностей
 }
+
+    // MARK: - Triggers
+
+example(of: "withLatestFrom") {
+     
+    let button = PublishSubject<Void>()
+    let textField = PublishSubject<String>()
+     
+    let observable = button.withLatestFrom(textField)
+    _ = observable.subscribe(onNext: { value in
+        print(value)
+    })
+     
+    textField.onNext("Par")
+    textField.onNext("Pari")
+    textField.onNext("Paris")
+    button.onNext(()) // 1
+    button.onNext(()) // 2
+    
+    /* output
+     --- Example of: withLatestFrom ---
+     Paris
+     Paris
+     */
+    
+    ///# `withLatestFrom(_:)` полезен во всех ситуациях, когда вы хотите,
+    ///# чтобы текущее (последнее) значение испускалось из наблюдаемой,
+    ///# но только когда происходит определенный триггер. 
+}
