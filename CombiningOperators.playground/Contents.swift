@@ -286,5 +286,154 @@ example(of: "withLatestFrom") {
     
     ///# `withLatestFrom(_:)` полезен во всех ситуациях, когда вы хотите,
     ///# чтобы текущее (последнее) значение испускалось из наблюдаемой,
-    ///# но только когда происходит определенный триггер. 
+    ///# но только когда происходит определенный триггер.
+}
+
+    // MARK: - Switches
+
+///# `amb(_:)` и `switchLatest()`.
+///# Они оба позволяют вам создавать наблюдаемую последовательность путем переключения между
+///# событиями объединенных или исходных последовательностей.
+///# Это позволяет вам решать, события какой последовательности будет получать подписчик во время выполнения.
+example(of: "amb") {
+    
+    let left = PublishSubject<String>()
+    let right = PublishSubject<String>()
+    
+    let observable = left.amb(right)
+    _ = observable.subscribe(onNext: { value in
+        print(value)
+    })
+    
+    left.onNext("Lisbon")
+        right.onNext("Copenhagen")
+    left.onNext("London")
+    left.onNext("Madrid")
+        right.onNext("Vienna")
+    
+    left.onCompleted()
+    right.onCompleted()
+    
+    /* output
+     --- Example of: amb ---
+     Lisbon
+     London
+     Madrid
+     */
+    
+    ///# `amb(_:)` подписывается на левую и правую наблюдаемые.
+    ///# Он ждет, пока одна из них не передаст элемент, затем отписывается от другой.
+    ///# После этого он передает элементы только от первой активной наблюдаемой.
+    ///# Его название действительно происходит от термина `ambiguous`:
+    ///# сначала вы не знаете, какая последовательность вас интересует, и хотите решить, когда сработает только одна из них.
+    
+    ///# Этот оператор часто упускают из виду.
+    ///# У него есть несколько отдельных практических применений, например,
+    ///# подключение к дублирующим серверам и выбор того, который отвечает первым.
+}
+
+example(of: "switchLatest") {
+    
+    let one = PublishSubject<String>()
+    let two = PublishSubject<String>()
+    let three = PublishSubject<String>()
+    
+    let source = PublishSubject<Observable<String>>()
+    
+    let observable = source.switchLatest()
+    let disposable = observable.subscribe(onNext: { value in
+        print(value)
+    })
+    
+    source.onNext(one)
+    one.onNext("Some text from sequence one")
+        two.onNext("Some text from sequence two")
+    
+    source.onNext(two)
+        two.onNext("More text from sequence two")
+    one.onNext("and also from sequence one")
+    
+    source.onNext(three)
+        two.onNext("Why don's you see me?")
+    one.onNext("I'm alone, help me")
+            three.onNext("Hey it's three. I win.")
+
+    source.onNext(one)
+    one.onNext("Nope. It's me, one!")
+    
+    disposable.dispose()
+    
+    /* output
+     --- Example of: switchLatest ---
+     Some text from sequence one
+     More text from sequence two
+     Hey it's three. I win.
+     Nope. It's me, one!
+     */
+    
+    ///# подписка печатает только элементы из последней последовательности,
+    ///# помещенной в исходную наблюдаемую.
+    ///# Это и есть цель `switchLatest()`
+}
+
+example(of: "reduce") {
+    
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    ///# сокращённая форма:
+    ///# `let observable = source.reduce(0, accumulator: +)`
+    ///# полная форма:
+    let observable = source.reduce(0) { summary, newValue in
+        return summary + newValue
+    }
+    ///# Оператор "накапливает" суммарное значение.
+    ///# Он начинает с начального значения, которое вы предоставили (в этом примере вы начинаете с 0).
+    ///# Каждый раз, когда исходная наблюдаемая выдает элемент, `reduce(_:_:)` вызывает ваше закрытие для получения нового итогового значения.
+    ///# Когда исходная наблюдаемая завершается, `reduce(_:_:)` выдает итоговое значение, а затем завершает работу.
+    
+    ///# Примечание:
+    ///# `reduce(_:_:)` выдает свое суммарное (накопленное) значение только тогда,
+    ///# когда исходная наблюдаемая завершается.
+    ///# Применение этого оператора к последовательностям, которые никогда не завершаются, ничего не выдаст.
+    ///# Это частый источник путаницы и скрытых проблем.
+    
+    _ = observable.subscribe(onNext: { value in
+        print(value)
+    })
+    
+    /* output
+     --- Example of: reduce ---
+     25
+     */
+}
+
+
+///# Близким аналогом `reduce(_:_:)` является оператор `scan(_:accumulator:)`
+example(of: "scan") {
+    
+    let source = Observable.of(1, 3, 5, 7, 9)
+    
+    let observable = source.scan(0, accumulator: +)
+    _ = observable.subscribe(onNext: { value in
+        print(value)
+    })
+    
+    /* output
+     --- Example of: scan ---
+     1
+     4
+     9
+     16
+     25
+     */
+    
+    ///# Вы получаете одно выходное значение на каждое входное значение.
+    ///# Это значение - текущий итог, накопленный закрытием.
+    ///# Каждый раз, когда исходная наблюдаемая испускает элемент, `scan(_:accumulator:)` вызывает ваше закрытие.
+    ///# Оно передает текущее значение вместе с новым элементом, и закрытие возвращает новое накопленное значение.
+    ///# Как и в `reduce(_:_:)`, результирующий тип наблюдаемой является возвращаемым типом закрытия.
+    ///# Диапазон использования `scan(_:accumulator:)` довольно велик;
+    ///# можно использовать его для вычисления текущих итогов, статистики, состояний и так далее.
+    ///# Инкапсуляция информации о состоянии внутри наблюдаемой `scan(_:accumulator:)` - хорошая идея;
+    ///# вам не понадобится использовать локальные переменные, и она исчезнет, когда исходная наблюдаемая завершится.
 }
