@@ -23,7 +23,28 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>12</integer>
+			<integer>4</integer>
+		</dict>
+		<key>CombiningOperatorsChallenge (Playground) 1.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+			<key>orderHint</key>
+			<integer>14</integer>
+		</dict>
+		<key>CombiningOperatorsChallenge (Playground) 2.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+			<key>orderHint</key>
+			<integer>15</integer>
+		</dict>
+		<key>CombiningOperatorsChallenge (Playground).xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+			<key>orderHint</key>
+			<integer>13</integer>
 		</dict>
 		<key>Filter (Playground) 1.xcscheme</key>
 		<dict>
@@ -51,7 +72,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>10</integer>
+			<integer>7</integer>
 		</dict>
 		<key>FilterChallenge (Playground) 1.xcscheme</key>
 		<dict>
@@ -72,7 +93,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>8</integer>
+			<integer>6</integer>
 		</dict>
 		<key>Observable (Playground) 1.xcscheme</key>
 		<dict>
@@ -121,7 +142,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>4</integer>
+			<integer>11</integer>
 		</dict>
 		<key>ObservableChallenge (Playground) 1.xcscheme</key>
 		<dict>
@@ -149,7 +170,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>7</integer>
+			<integer>12</integer>
 		</dict>
 		<key>RxSwiftPlayground (Playground) 1.xcscheme</key>
 		<dict>
@@ -219,7 +240,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>11</integer>
+			<integer>10</integer>
 		</dict>
 		<key>SubjectChallenge (Playground) 1.xcscheme</key>
 		<dict>
@@ -247,7 +268,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>6</integer>
+			<integer>9</integer>
 		</dict>
 		<key>TransformingOperators (Playground) 1.xcscheme</key>
 		<dict>
@@ -268,7 +289,7 @@
 			<key>isShown</key>
 			<false/>
 			<key>orderHint</key>
-			<integer>9</integer>
+			<integer>8</integer>
 		</dict>
 	</dict>
 </dict>
