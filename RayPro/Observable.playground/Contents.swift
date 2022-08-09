@@ -33,3 +33,27 @@ example(of: "creating observable") {
     // это наблюдатель типа String
     let sequelTrilogy = Observable.from([episodeVII, episodeVIII, episodeIX])
 }
+
+example(of: "create") {
+    
+    enum Droid: Error {
+        case OU812
+    }
+    
+    let bag = DisposeBag()
+    
+    Observable<String>.create { observer in
+        observer.onNext("R2-D2")
+        observer.onNext("C-3PO")
+        observer.onCompleted()
+        
+        return Disposables.create()
+    }
+    .subscribe(
+        onNext: { print($0) },
+        onError: { print("Error", $0) },
+        onCompleted: { print("Completed!") },
+        onDisposed: { print("Disposed...") }
+    )
+    .disposed(by: bag)
+}
