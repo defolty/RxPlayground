@@ -23,15 +23,19 @@ example(of: "creating observable") {
     // .just - всё что делает just это создает наблюдаемую последовательность содержащую только один элемент
     // .just - по идеи это метод, но в RxSwift это назывыается оператор
     let mostPopular: Observable<String> = Observable<String>.just(episodeV)
+    print(type(of: mostPopular))
     
     // это наблюдатель типа String
     let originalTrilogy = Observable.of(episodeIV, episodeV, episodeVI)
+    print(type(of: originalTrilogy))
     
     // это наблюдаемый массив строк
     let prequelTrilogy = Observable.of([episodeI, episodeII, episodeIII])
+    print(type(of: prequelTrilogy))
     
     // это наблюдатель типа String
     let sequelTrilogy = Observable.from([episodeVII, episodeVIII, episodeIX])
+    print(type(of: sequelTrilogy))
 }
 
 example(of: "create") {
@@ -44,8 +48,9 @@ example(of: "create") {
     
     Observable<String>.create { observer in
         observer.onNext("R2-D2")
+        observer.onError(Droid.OU812)
         observer.onNext("C-3PO")
-        observer.onCompleted()
+        //observer.onCompleted()
         
         return Disposables.create()
     }
